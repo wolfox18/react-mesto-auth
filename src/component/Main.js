@@ -33,7 +33,7 @@ function Main({
           <button
             onClick={onEditAvatar}
             className="profile__change-avatar"
-          ></button>
+          />
         </div>
         <div className="profile__info">
           <div className="profile__name-block">
@@ -43,7 +43,7 @@ function Main({
               aria-label="Редактировать профиль"
               type="button"
               className="profile__edit-btn transparent-btn"
-            ></button>
+            />
           </div>
 
           <p className="profile__description">{currentUser.about}</p>
@@ -53,7 +53,7 @@ function Main({
           aria-label="Добавить запись"
           type="button"
           className="profile__post-add transparent-btn"
-        ></button>
+        />
       </section>
       <section className="elements">
         <ul className="elements__list">

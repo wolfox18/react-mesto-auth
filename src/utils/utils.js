@@ -15,3 +15,8 @@ export const popupsConfig = {
   imageSelector: ".popup__image",
   submitButtonSelector: ".popup__save-btn"
 };
+
+export function checkResponce(res) {
+  if (!res.ok) return Promise.reject(res.status);
+    return res.json();
+}

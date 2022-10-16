@@ -32,14 +32,15 @@ function App() {
   //данные пользователя владельца инфо, карточек
   const [currentUser, setCurrentUser] = React.useState({});
   //данные авторизованного пользователя
-  const [userEmail, setUserEmail] = React.useState({});
+  const [userEmail, setUserEmail] = React.useState("");
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isSucces, setIsSucces] = React.useState(true);
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    Promise.all([api.getInitialCards()])
-      .then(([initialCards]) => {
+    Promise.all([api.getUserInfo(), api.getInitialCards()])
+      .then(([userData, initialCards]) => {
+        setCurrentUser(userData);
         setCards(initialCards);
       })
       .catch((err) => {
@@ -47,30 +48,19 @@ function App() {
       });
   }, []);
 
+  
   React.useEffect(() => {
-    api
-      .getUserInfo()
-      .then((userData) => {
-        setCurrentUser(userData);
-      })
-      .catch((err) => {
-        console.log("Ошибка API при загрузке первоначальных данных!", err);
-      });
+    checkToken();
   }, []);
 
-  React.useEffect(() => {
-    tokenCheck();
-  }, []);
-
-  const tokenCheck = () => {
+  const checkToken = () => {
     const jwt = localStorage.getItem("jwt");
     if (!jwt) return;
     Auth.getUserEmail(jwt).then((data) => {
       setIsLoggedIn(true);
-      console.log(data);
       setUserEmail(data.data.email);
       navigate("/");
-    });
+    }).catch((err)=>{console.log("Ошибка при проверке токена: ", err);});
   };
 
   function handleCardLike(card) {
@@ -124,14 +114,8 @@ function App() {
   function handleUpdateAvatar(url) {
     api
       .changeAvatar(url)
-      .then(() => {
-        setCurrentUser({
-          name: currentUser.name,
-          about: currentUser.about,
-          _id: currentUser._id,
-          cohort: currentUser.cohort,
-          avatar: url,
-        });
+      .then((userData) => {
+        setCurrentUser(userData);
         closeAllPopups();
       })
       .catch((err) => {
@@ -152,7 +136,6 @@ function App() {
   }
 
   const handleLogin = (email, password) => {
-    console.log("handleLogin");
     Auth.authorise(password, email)
       .then((data) => {
         localStorage.setItem("jwt", data.token);
@@ -167,7 +150,6 @@ function App() {
   };
 
   const handleRegister = (email, password) => {
-    console.log("handleRegister");
     Auth.register(password, email)
       .then((data) => {
         showMessagePopup(true);
@@ -225,7 +207,7 @@ function App() {
           isOpen={isPopupProfileOpened}
           onClose={closeAllPopups}
           onUpdateUser={handeUpdateUser}
-        ></EditProfilePopup>
+        />
         <AddPlacePopup
           isOpen={isPopupAddPlaceOpened}
           onClose={closeAllPopups}
