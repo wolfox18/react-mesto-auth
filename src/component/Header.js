@@ -1,7 +1,19 @@
 import React from "react";
 import logoPath from "../images/logo-mesto.svg";
+import { Link, useLocation } from "react-router-dom";
 
 function Header({ isLoggedIn, email, onLogout }) {
+  const location = useLocation();
+  const link =
+    location.pathname === "/sign-in" ? (
+      <Link className="header__link transparent-btn" to="/sign-up">
+        Регистрация
+      </Link>
+    ) : (
+      <Link className="header__link transparent-btn" to="/sign-in">
+        Войти
+      </Link>
+    );
   return (
     <header className="header">
       <a href="#" className="logo">
@@ -13,7 +25,11 @@ function Header({ isLoggedIn, email, onLogout }) {
       </a>
       <div className="header__login-container">
         <p className="header__email">{isLoggedIn ? email : ""}</p>
-        <button className="header__link transparent-btn" onClick={onLogout}>{isLoggedIn ? "Выйти" : "Войти"}</button>
+        {isLoggedIn ? (
+          <button className="header__link transparent-btn" onClick={onLogout}>
+            Выйти
+          </button>
+        ) : link}
       </div>
     </header>
   );

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from 'react-router-dom';
 
-function Register({onLogin: onRegister}) {
+function Register({onRegister}) {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
 
@@ -23,7 +23,7 @@ const handleSubmit = (e) => {
       <h1 className="singform__title">Регистрация</h1>
       <input className="signform__input" name="email" type="email" placeholder="Email" value={email} onChange={handleEmailChange} />
       <input className="signform__input" name="password" type="password" placeholder="Пароль" value={password} onChange={handlePasswordChange} />
-      <button className="signform__button">Зарегистрироваться</button>
+      <button className="signform__button transparent-btn">Зарегистрироваться</button>
       <Link to="/sign-in" className="signform__link">Уже зарегистрированы? Войти</Link>
     </form>
   );

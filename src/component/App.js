@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import Header from "./Header";
 import Main from "./Main";
@@ -16,6 +16,7 @@ import Register from "./Register";
 import InfoTooltip from "./InfoTooltip";
 import succesImgPath from "../images/succes.svg";
 import unSuccesImgPath from "../images/unsucces.svg";
+import * as Auth from "../utils/Auth";
 
 function App() {
   const [isPopupAvatarOpened, setIsPopupAvatarOpen] = React.useState(false);
@@ -24,14 +25,17 @@ function App() {
     React.useState(false);
   const [isInfoTooltipOpened, setIsInfoTooltipOpened] = React.useState(false);
   const [isPopupImageOpened, setIsPopupImageOpened] = React.useState(false);
-  const [selectedCard, setSelectedCard] = React.useState({});
-
-  const [currentUser, setCurrentUser] = React.useState({});
 
   const [cards, setCards] = React.useState([]);
 
-  const [isLoggedIn, setIsLoggedIn] = React.useState(true);
+  const [selectedCard, setSelectedCard] = React.useState({});
+  //данные пользователя владельца инфо, карточек
+  const [currentUser, setCurrentUser] = React.useState({});
+  //данные авторизованного пользователя
+  const [userEmail, setUserEmail] = React.useState({});
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isSucces, setIsSucces] = React.useState(true);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     Promise.all([api.getInitialCards()])
@@ -53,6 +57,21 @@ function App() {
         console.log("Ошибка API при загрузке первоначальных данных!", err);
       });
   }, []);
+
+  React.useEffect(() => {
+    tokenCheck();
+  }, []);
+
+  const tokenCheck = () => {
+    const jwt = localStorage.getItem("jwt");
+    if (!jwt) return;
+    Auth.getUserEmail(jwt).then((data) => {
+      setIsLoggedIn(true);
+      console.log(data);
+      setUserEmail(data.data.email);
+      navigate("/");
+    });
+  };
 
   function handleCardLike(card) {
     const isLiked = card.likes.some((user) => user._id === currentUser._id);
@@ -134,16 +153,47 @@ function App() {
 
   const handleLogin = (email, password) => {
     console.log("handleLogin");
+    Auth.authorise(password, email)
+      .then((data) => {
+        localStorage.setItem("jwt", data.token);
+        setIsLoggedIn(true);
+        setUserEmail(email);
+        navigate ("/");
+      })
+      .catch((err) => {
+        console.log("Ошибка - ", err);
+        showMessagePopup(false);
+      });
   };
 
   const handleRegister = (email, password) => {
     console.log("handleRegister");
+    Auth.register(password, email)
+      .then((data) => {
+        showMessagePopup(true);
+        navigate ("/sign-in");
+      })
+      .catch((err) => {
+        console.log("Ошибка - ", err);
+        showMessagePopup(false);
+      });
+  };
+
+  const logOut = () => {
+    localStorage.removeItem("jwt");
+    setIsLoggedIn(false);
+    navigate ("/sign-in");
+  };
+
+  const showMessagePopup = (isSucces) => {
+    isSucces ? setIsSucces(true) : setIsSucces(false);
+    setIsInfoTooltipOpened(true);
   };
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
-      <div className="page">
-        <Header isLoggedIn={isLoggedIn} email="test@test.te"/>
+      
+        <Header isLoggedIn={isLoggedIn} email={userEmail} onLogout={logOut} />
         <Routes>
           <Route
             path="/sign-up"
@@ -212,7 +262,7 @@ function App() {
           }
           imagePath={isSucces ? succesImgPath : unSuccesImgPath}
         />
-      </div>
+   
     </CurrentUserContext.Provider>
   );
 }
