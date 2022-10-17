@@ -69,13 +69,13 @@ function App() {
       setCards((cards) =>
         cards.map((oldCard) => (oldCard._id === card._id ? newCard : oldCard))
       );
-    });
+    }).catch((err) => {console.log("Ошибка при лайке карточки: ", err);});
   }
 
   function handleCardDelete(card) {
     api.deleteCard(card._id).then(() => {
       setCards((cards) => cards.filter((oldCard) => oldCard._id !== card._id));
-    });
+    }).catch((err) => {console.log("Ошибка при удалении карточки: ", err);});
   }
 
   function handleEditAvatarClick() {
@@ -131,7 +131,7 @@ function App() {
         closeAllPopups();
       })
       .catch((err) => {
-        console.log("Ошибка при обновлении аватара: ", err);
+        console.log("Ошибка при добавлении карточки: ", err);
       });
   }
 
